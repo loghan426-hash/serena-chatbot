@@ -18,18 +18,18 @@ const groq = new Groq({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+// CONFIGURACIÓN DE SESIONES CORREGIDA PARA RENDER
+app.set('trust proxy', 1); // <-- OBLIGATORIO: Le dice a Express que confíe en el proxy de Render
+
 app.use(session({
     secret: 'secreto_seguridad_serena_2026',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true } // Forzar cookies seguras sobre HTTPS
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // Solo true si está en producción real con proxy configurado
+        sameSite: 'lax'
+    }
 }));
-
-// CARGAR CERTIFICADOS SSL GENERADOS CON OPENSSL
-const opcionesHttps = {
-    key: fs.readFileSync(path.join(__dirname, 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
-};
 
 // TABLAS DE LA BASE DE DATOS
 db.serialize(() => {
