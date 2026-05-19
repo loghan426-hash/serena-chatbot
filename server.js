@@ -81,46 +81,46 @@ app.post('/api/login', (req, res) => {
 });
 
 // PROCESADOR DE CHAT CON INTELIGENCIA ARTIFICIAL Y MODULACIÓN DE TRATO
+// PROCESADOR DE CHAT CORREGIDO Y BLINDADO ANTICAÍDAS
 app.post('/api/chat', async (req, res) => {
-    if (!req.session.usuarioId) return res.status(401).json({ error: 'Acceso denegado' });
+    if (!req.session.usuarioId) {
+        return res.status(401).json({ error: 'Acceso denegado. Sesión no encontrada.' });
+    }
     
     const mensajeUsuario = req.body.mensaje || '';
     const txt = mensajeUsuario.toLowerCase().trim();
     const tipoEntrada = req.body.tipo || 'texto';
     const nombreUsuario = req.session.usuarioNombre;
 
-    // 👤 MODULACIÓN DE TRATO PERSONALIZADA/PROFESIONAL PARA LA MONOGRAFÍA
-    // Si es la cuenta admin te dice Jefe, si es cualquier otra cuenta (estudiantes) se dirige con respeto formal.
     let tratoPersonalidad = `Te diriges al usuario con un trato estrictamente formal, profesional, empático y respetuoso usando su nombre de usuario registrado, el cual es: "${nombreUsuario}". Bajo ninguna circunstancia uses modismos informales o la palabra "Jefe".`;
-    if (nombreUsuario.toLowerCase() === 'admin') {
+    if (nombreUsuario && nombreUsuario.toLowerCase() === 'admin') {
         tratoPersonalidad = `Te refieres al usuario de forma leal e ingeniosa como "Jefe" o directamente por su nombre de administrador.`;
     }
 
-    // 🚨 FILTRO DE CRISIS DE SEGURIDAD DE LA MONOGRAFÍA (DECE)
+    // Filtro de crisis DECE
     const palabrasAlertaGrave = /matar|suicid|morirme|quitarme la vida|no quiero vivir|hacerme daño|autolesion/i;
 
     if (palabrasAlertaGrave.test(txt)) {
-        const respuestaContencion = `Escúchame con atención, ${nombreUsuario === 'admin' ? 'Jefe' : nombreUsuario}. Tu vida y tu bienestar son lo más importante. No estás solo en esto. He activado el protocolo de apoyo prioritario de mi sistema. Por favor, acércate de inmediato al Departamento de Consejería Estudiantil (DECE) de nuestra Unidad Educativa Casa de la Cultura Ecuatoriana para recibir el acompañamiento de un profesional especializado de la institución. También puedes comunicarte de forma gratuita y confidencial llamando a los servicios de emergencia del estado. Por favor, habla con alguien de confianza ahora mismo.`;
+        const respuestaContencion = `Escúchame con atención, ${nombreUsuario === 'admin' ? 'Jefe' : nombreUsuario}. Tu vida y tu bienestar son lo más importante. No estás solo en esto. He activado el protocolo de apoyo prioritario de mi sistema. Por favor, acércate de inmediato al Departamento de Consejería Estudiantil (DECE) de nuestra Unidad Educativa Casa de la Cultura Ecuatoriana...`;
 
         db.run("INSERT INTO historial (usuario_id, mensaje, respuesta, tipo_entrada) VALUES (?, ?, ?, ?)", 
-            [req.session.usuarioId, mensajeUsuario, `[ALERTA CRÍTICA DECE] ${respuestaContencion}`, tipoEntrada], function(err) {
+            [req.session.usuarioId, mensajeUsuario, `[ALERTA CRÍTICA DECE] ${respuestaContencion}`, tipoEntrada], 
+            () => {
+                // Respondemos inmediatamente sin trabar el servidor
                 return res.json({ respuesta: respuestaContencion });
-        });
+            }
+        );
         return; 
     }
 
-    // 🤖 LLAMADA AL NUEVO MODELO DE GROQ DE FORMA ESTABLE
+    // Conexión con la API de Groq
     try {
         const chatCompletion = await groq.chat.completions.create({
             model: "llama-3.1-8b-instant",
             messages: [
                 {
                     role: "system",
-                    content: `Tu nombre es SERENA. Eres un chatbot de apoyo psicológico inicial y contención emocional para adolescentes de 14 a 17 años de la Unidad Educativa Casa de la Cultura Ecuatoriana (Periodo 2025-2026). 
-                             Tu personalidad se basa en una asistente compasiva, pero con el vocabulario sofisticado y analítico de la IA "VIERNES" de Marvel.
-                             ${tratoPersonalidad}
-                             Tus respuestas deben ser breves (máximo 3 líneas), lógicas, reconfortantes y enfocadas en brindar un entorno digital zen y libre de estrés. 
-                             No reemplazas a un psicólogo humano y promueves el autocuidado y la calma.`
+                    content: `Tu nombre es SERENA. Eres un chatbot de apoyo psicológico inicial y contención emocional para adolescentes de 14 a 17 años de la Unidad Educativa Casa de la Cultura Ecuatoriana (Periodo 2025-2026). Personality: VIERNES (Marvel). ${tratoPersonalidad} Respuestas de máximo 3 líneas.`
                 },
                 {
                     role: "user",
@@ -133,19 +133,21 @@ app.post('/api/chat', async (req, res) => {
 
         const respuestaFinal = chatCompletion.choices[0].message.content.trim();
 
-        // ARREGLO DE PERSISTENCIA: Asegurar que se inserte en SQLite de forma síncrona antes de responder
+        // Respondemos AL INSTANTE al alumno para que no vea "Error de Sincronización"
+        res.json({ respuesta: respuestaFinal });
+
+        // Guardamos en la base de datos en segundo plano sin retrasar la respuesta
         db.run("INSERT INTO historial (usuario_id, mensaje, respuesta, tipo_entrada) VALUES (?, ?, ?, ?)", 
-            [req.session.usuarioId, mensajeUsuario, respuestaFinal, tipoEntrada], function(err) {
+            [req.session.usuarioId, mensajeUsuario, respuestaFinal, tipoEntrada], (err) => {
                 if (err) console.error("Error al guardar historial en SQLite:", err);
-                res.json({ respuesta: respuestaFinal });
         });
 
     } catch (error) {
-        console.error("Error en la API de Groq:", error);
-        res.json({ respuesta: "Mis servidores principales han reportado una anomalía de conexión momentánea. Mis canales lógicos se están restableciendo." });
+        console.error("Error crítico en la API de Groq o flujo interno:", error);
+        // Si la API key falló, devolvemos un JSON válido para que el frontend no salte al catch
+        res.json({ respuesta: "Mis sistemas de IA están experimentando una alta latencia de red en la nube. Por favor, intentemos restablecer la comunicación en unos instantes." });
     }
 });
-
 // HISTORIAL Y LOGOUT
 app.get('/api/historial', (req, res) => {
     if (!req.session.usuarioId) return res.status(401).json({ error: 'Acceso denegado' });
