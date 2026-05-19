@@ -165,11 +165,22 @@ app.post('/api/historial/borrar', (req, res) => {
 
 app.post('/api/logout', (req, res) => { req.session.destroy(); res.json({ success: true }); });
 
-// CONTROL DE RUTAS UNIFICADO
-app.get('/', (req, res) => { res.sendFile('login.html', { root: './public' }); });
-app.get('/login.html', (req, res) => { res.sendFile('login.html', { root: './public' }); });
-app.get('/index.html', (req, res) => { res.sendFile('index.html', { root: './public' }); });
-app.get('/chatbot.html', (req, res) => { res.sendFile('chatbot.html', { root: './public' }); });
+// REEMPLAZA TUS RUTAS DEL FINAL POR ESTAS:
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/chatbot.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'chatbot.html'));
+});
 
 // CONFIGURACIÓN DE PUERTO DINÁMICO PARA CLOUD HOSTING (RENDER)
 const PORT = process.env.PORT || 3000;
