@@ -1,0 +1,22 @@
+{
+  "name": "serena-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "devcert": "^1.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "groq-sdk": "^1.2.0",
+    "openai": "^6.38.0",
+    "sqlite3": "^6.0.1"
+  }
+}
