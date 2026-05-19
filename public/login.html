@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERENA - Acceso Unificado</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <h2>Bienvenido a SERENA</h2>
+        <p class="subtitle">Tu asistente inteligente en un entorno de paz</p>
+        
+        <!-- Pestañas de Navegación Interna -->
+        <div class="tabs-container">
+            <button id="tabRegister" class="tab-btn active">Registrarse</button>
+            <button id="tabLogin" class="tab-btn">Iniciar Sesión</button>
+        </div>
+
+        <!-- FORMULARIO DE REGISTRO -->
+        <form id="registroForm" class="auth-form active">
+            <div class="input-group">
+                <label for="regUsuario">Nuevo Usuario</label>
+                <input type="text" id="regUsuario" required placeholder="Elige tu nombre de usuario">
+            </div>
+            <div class="input-group">
+                <label for="regPassword">Contraseña</label>
+                <input type="password" id="regPassword" required placeholder="Crea una contraseña segura">
+            </div>
+            <button type="submit" class="btn-primary">Crear mi Cuenta</button>
+            <p id="regMessage" class="error-text"></p>
+        </form>
+
+        <!-- FORMULARIO DE LOGIN -->
+        <form id="loginForm" class="auth-form">
+            <div class="input-group">
+                <label for="loginUsuario">Usuario</label>
+                <input type="text" id="loginUsuario" required placeholder="Introduce tu usuario">
+            </div>
+            <div class="input-group">
+                <label for="loginPassword">Contraseña</label>
+                <input type="password" id="loginPassword" required placeholder="Introduce tu contraseña">
+            </div>
+            <button type="submit" class="btn-primary">Ingresar al Sistema</button>
+            <p id="loginErrorMessage" class="error-text"></p>
+        </form>
+    </div>
+
+    <script>
+        const tabRegister = document.getElementById('tabRegister');
+        const tabLogin = document.getElementById('tabLogin');
+        const registroForm = document.getElementById('registroForm');
+        const loginForm = document.getElementById('loginForm');
+
+        tabRegister.addEventListener('click', () => {
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            registroForm.classList.add('active');
+            loginForm.classList.remove('active');
+        });
+
+        tabLogin.addEventListener('click', () => {
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            loginForm.classList.add('active');
+            registroForm.classList.remove('active');
+        });
+
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('regUsuario').value;
+            const password = document.getElementById('regPassword').value;
+            const msg = document.getElementById('regMessage');
+
+            const res = await fetch('/api/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, password })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                msg.textContent = "¡Registro exitoso! Ya puedes iniciar sesión.";
+                msg.style.color = "#5eead4";
+                msg.style.opacity = 1;
+                setTimeout(() => { tabLogin.click(); msg.style.opacity = 0; }, 1500);
+            } else {
+                msg.textContent = data.message;
+                msg.style.color = "#f87171";
+                msg.style.opacity = 1;
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('loginUsuario').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorTxt = document.getElementById('loginErrorMessage');
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, password })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                window.location.href = '/index.html';
+            } else {
+                errorTxt.textContent = data.message;
+                errorTxt.style.color = "#f87171";
+                errorTxt.style.opacity = 1;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERENA - Introducción a la IA</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-wrapper">
+        <!-- Barra de Navegación Superior -->
+        <nav class="navbar">
+            <div class="logo">SERENA <span>Chatbot</span></div>
+            <div class="nav-links">
+                <button id="btnLogout" class="btn-secondary">Cerrar Sesión</button>
+            </div>
+        </nav>
+
+        <!-- Sección Principal (Hero) -->
+        <header class="hero-section">
+            <h1>El Futuro de la Asistencia Virtual</h1>
+            <p>Descubre cómo la Inteligencia Artificial se une a la calma para optimizar tu entorno digital diario.</p>
+            <a href="chatbot.html" class="btn-primary start-btn">Iniciar Asistente SERENA</a>
+        </header>
+
+        <!-- Contenedor Informativo Grid -->
+        <section class="info-grid">
+            <div class="info-card">
+                <div class="card-icon">🧠</div>
+                <h3>¿Qué es la IA?</h3>
+                <p>Es la simulación de procesos de inteligencia humana por parte de sistemas informáticos. Permite a las máquinas aprender, razonar, resolver problemas complejos y auto-corregirse de manera automatizada.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon">✨</div>
+                <h3>¿Cómo ayuda SERENA?</h3>
+                <p>A diferencia de interfaces ruidosas o estresantes, SERENA combina algoritmos lógicos con un entorno visual relajante. Te asiste en la organización de ideas, análisis de datos y respuestas rápidas sin saturarte.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-icon">⚡</div>
+                <h3>Optimización Diaria</h3>
+                <p>Al delegar tareas repetitivas a un asistente virtual, liberas carga mental. La automatización inteligente te permite concentrarte exclusivamente en lo que verdaderamente requiere tu creatividad humana.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            const res = await fetch('/api/logout', { method: 'POST' });
+            const data = await res.json();
+            if(data.success) window.location.href = '/login.html';
+        });
+    </script>
+</body>
+</html>
