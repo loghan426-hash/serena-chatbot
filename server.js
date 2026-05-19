@@ -182,9 +182,9 @@ app.get('/chatbot.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'chatbot.html'));
 });
 
-// CONFIGURACIÓN DE PUERTO DINÁMICO PARA CLOUD HOSTING (RENDER)
+// CONFIGURACIÓN DE PUERTO DINÁMICO Y HOST PARA CLOUD HOSTING (RENDER)
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor de SERENA activo y corriendo en el puerto ${PORT}`);
 });
