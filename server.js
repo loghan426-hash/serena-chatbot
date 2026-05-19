@@ -18,16 +18,16 @@ const groq = new Groq({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-// CONFIGURACIÓN DE SESIONES CORREGIDA PARA RENDER
-app.set('trust proxy', 1); // <-- OBLIGATORIO: Le dice a Express que confíe en el proxy de Render
+// CONFIGURACIÓN DE SESIONES CORREGIDA PARA RENDER (OBLIGATORIA)
+app.set('trust proxy', 1); // <-- Le dice a Express que confíe en el proxy de Render
 
 app.use(session({
     secret: 'secreto_seguridad_serena_2026',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Solo true si está en producción real con proxy configurado
-        sameSite: 'lax'
+        secure: true, // Mantiene la cookie segura sobre HTTPS de Render
+        sameSite: 'none' // Permite el cruce de peticiones de forma estable
     }
 }));
 
